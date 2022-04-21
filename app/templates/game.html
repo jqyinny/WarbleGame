@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block head %}
+    {{ super() }}
+    <link href="//cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.css" rel="stylesheet"/>
+    <link href="/static/css/game.css" rel="stylesheet">
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.0/socket.io.min.js" type="text/javascript"></script>
+    <script src="//cdn.rawgit.com/kimmobrunfeldt/progressbar.js/1.0.1/dist/progressbar.min.js"></script>
+    <script>
+        var cdnUrl = '{{ CDN_URL }}';
+    </script>
+    <script type="text/javascript">
+        var room_code = '{{ room_code }}'
+    </script>
+    <script src="/static/js/game.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+{% endblock %}
+{% block content %}
+
+    <!-- Game rules -->
+    <div id="game_rules" class="info" data-allow-multiple-answers="{{ ALLOW_MULTIPLE_ANSWER }}">
+        <span>suck my dick</span>
+    </div>
+
+    <!-- Pre Lobby modal -->
+    <div id="prelobby_modal_background" style="display: none;">
+        <div id="lobby_model">
+            <form id="join_room_form">
+                <div>
+                    <input id="room_code" type="text" placeholder="Enter Room Code"
+                        name="room_code">
+                    <input class="btn btn-default" type="submit" value="Join Room">
+                </div>
+            </form>
+            <form id="create_room_form">
+                <div>
+                    <input class="btn btn-default" type="submit" value="Create Room">
+                </div>
+            </form>
+
+            <p id="prelobby_error"></p>
+
+        </div>
+    </div>
+
+    <!-- Name modal -->
+    <div id="name_modal_background" style="display: none;">
+        <div id="lobby_model">
+            <form id="name_form">
+                <div>
+                    <input id="player_name" type="text" placeholder="Name your player"
+                        name="player_name">
+                    <input class="btn btn-default" type="submit" value="Submit">
+                </div>
+            </div>
+            </form>
+
+            <p id="name_error"></p>
+
+        </div>
+    </div>
+
+    <!-- Lobby modal -->
+    <div id="lobby_modal_background" style="display: none;">
+        <div id="lobby_model">
+            <ul id="player_list"></ul>
+            <form id="lobby_form">
+                <div>
+                    <input class="btn btn-default" type="submit" value="Start Game">
+                </div>
+            </form>
+
+            <p id="lobby_error"></p>
+        </div>
+    </div>
+
+    <!-- Game -->
+    <div id="game_modal_background" style="display: none;">
+        <div id="game_model">
+            <p id="choosen_word"></p>
+            <form id="word_options_form">
+                <div>
+                    <input id="Option1" class="btn btn-default" type="submit" value="" onclick="select_word(this)">
+                    <input id="Option2" class="btn btn-default" type="submit" value="" onclick="select_word(this)">
+                    <input id="Option3" class="btn btn-default" type="submit" value="" onclick="select_word(this)">
+                </div>
+            </form>
+            <form id="end_round_form">
+                <div>
+                    <input class="btn btn-default" type="submit" value="End Turn">
+                </div>
+            </form>
+            <p id="lobby_error"></p>
+        </div>
+    </div>
+
+{% endblock %}
