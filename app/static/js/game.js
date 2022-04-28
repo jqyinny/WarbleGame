@@ -1,5 +1,7 @@
 var player_id;
-// var player_name; TODO
+var player_name;
+var socket = io.connect('//' + document.domain + ':' + location.port);
+var room_code;
 
 $(document).ready(function () {
     // TODO add cookie when already logged in
@@ -13,12 +15,12 @@ function prelobby() {
 
     $("#join_room_form").submit(function (event) {
         event.preventDefault();
-        var room_code = $('#room_code').val();
+        room_code = $('#room_code').val();
         if(!room_code){
             $("#prelobby_error").text('Please enter the room code.');
         }else{
             $('#prelobby_modal_background').hide();
-            enter_name(room_code);
+            enter_name();
         }
 
     });
@@ -30,17 +32,16 @@ function prelobby() {
     });
 }
 
-function enter_name(room_code) {
+function enter_name() {
     $('#name_modal_background').show();
     $("#name_form").submit(function (event) {
         event.preventDefault();
-        var player_name = $('#player_name').val();
+        player_name = $('#player_name').val();
         if (!player_name) {
             $("#name_error").text('Please select a player name.');
         } else if (player_name.length > 10) {
             $("#name_error").text('Player name must contain less than 10 characters.');
         }else{
-            socket = io.connect('//' + document.domain + ':' + location.port);
             socket.emit('add_player', player_name, room_code);
             $('#name_modal_background').hide();
             socket.on('add_player_to_list', add_player_to_list);
@@ -56,53 +57,73 @@ function lobby() {
     // Start game.
     $("#lobby_form").submit(function (event) {
         event.preventDefault();
-        socket = io.connect('//' + document.domain + ':' + location.port);
-
-        socket.emit('start_game', player_id);
-        $('#lobby_modal_background').hide();
-        socket.on('start_player_turn', start_player_turn);
-        console.log("HI");
-        socket.on('start_round', start_round);
+        socket.emit('start_game', room_code);
     });
+    socket.on('start_round', start_round);
 }
 
 // Called by server after round starts.
-function start_player_turn(data) {
-    console.log("SPENCER");
+function start_round(data) {
+    $('#lobby_modal_background').hide();
     $('#game_modal_background').show();
-    console.log("SPENCER");
-    options = data["choices"]
-    document.getElementById("Option1").value = options[0]
-    document.getElementById("Option2").value = options[1]
-    document.getElementById("Option3").value = options[2]
+    current_player = data["current_player"];
 
-    $("input").click(function() {
-        var fired_button = $(this).val();
-        alert(fired_button);
+    if(current_player == player_name){
+        $("#current_player").text("It's your turn!");
+        options = data["choices"]
+        document.getElementById("Option1").value = options[0]
+        document.getElementById("Option2").value = options[1]
+        document.getElementById("Option3").value = options[2]
+
+    }else{
+        $('#word_options_form').hide();
+        $("#current_player").text( data["current_player"] + "'s turn");
+    }
+    socket.on("choosen_word", choosen_word);
+    socket.on("recieve_messages", recieve_messages);
+    
+    $("#message_form").submit(function(event) {
+        event.preventDefault();
+        msg = $('#usermsg').val();
+        if(msg != "" ){
+            console.log("sending msg");
+            socket.emit("send_chat", msg, room_code, player_name);
+        }
+        $('#usermsg').val("");
     });
 }
 
-function start_round(data) {
-    console.log("CHUCK")
-
+function select_word(option){
+    let word = document.getElementById(option).value;
+    console.log(word);
+    socket.emit("choose_word", word, room_code);
 }
 
-function select_word(element){
-    console.log("SPENCER");
-    // socket = io.connect('//' + document.domain + ':' + location.port);
-    // socket.emit('select_word', element.val);
-    // $("#choosen_word").text(element.val);
+function recieve_messages(data){
+    // If message is the answer then only display to player.
+    let chatbox = document.getElementById("chatbox");
+    let li = document.createElement('li');
+    li.innerText = data["messenger_name"] + " says " + data["msg"];
+    chatbox.appendChild(li);
 }
 
+function choosen_word(data){
+    if(current_player == player_name){
+        $("#choosen_word").text( "Your word: " + data["choosen_word"]);
+
+    }else{
+        $("#choosen_word").text( "Guess the word!");
+    }
+}
 
 // Called by server after successful player name added.
 function add_player_to_list(data){
-    player_id = data["room_code"]
+    room_code = data["room_code"];
     let list = document.getElementById("player_list");
     list.innerHTML="";
-    for (const player_name in data["player_name"]) {
+    for (const other_player_name in data["player_name"]) {
         let li = document.createElement("li");
-        li.innerText = data["player_name"][player_name];
+        li.innerText = data["player_name"][other_player_name];
         list.appendChild(li);
     }
 }

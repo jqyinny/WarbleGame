@@ -17,7 +17,7 @@ class Game:
         self.players = []
         self.turn_number = 0
         self.wordset = []
-        self.current_round = Round()
+        self.current_round = None
 
     def add_player(self, player_id, player_name):
         self.players.append(Player(player_id, player_name))
@@ -33,15 +33,11 @@ class Game:
         return [player.get_id() for player in self.players if player != current_player]
 
     def start_new_turn(self):
-        # Reset answers for this turn
-        self.answers = []
-
-        current_player = self.players[self.turn_number%len(self.players)]
+        self.current_round = Round(self.turn_number%len(self.players))
         choices = self.get_word_choices()
         # Update turn number
         self.turn_number += 1
-
-        return current_player, choices
+        return choices
         
     # TODO add wordset options
     def load_word_set(self, wordset):
@@ -50,37 +46,45 @@ class Game:
             f.close()
 
     def get_word_choices(self):
-        word_choices = []
-        word_choices.append(random.choice(self.wordset))
-        word_choices.append(random.choice(self.wordset))
-        word_choices.append(random.choice(self.wordset))
-        return word_choices
+        return random.sample(self.wordset, 3)
 
     def choose_word(self, choosen_word):
-        self.curr
+        self.current_round.word = choosen_word
+
+    def get_current_player_name(self):
+        return self.players[self.current_round.current_player_index].name
+
+    def get_current_player_id(self):
+        return self.players[self.current_round.current_player_index].sid
+    
+    def answer(self, answer, name):
+        word_picked = self.current_round.word != ""
+        correct = self.current_round.word == answer
+        not_answered = name in self.current_round.answered
+        if(word_picked and correct and not_answered):
+            points = 100
+            next(player for player in self.players if player.name == name).award_points(points)
+            return points
+        return 0
 
 class Round:
-    def __init__(self):
-        self.sid = ""
-        self.name = ""
-        self.answers = {}
+    def __init__(self, index):
+        self.current_player_index = index
+        self.word = ""
+        self.answered = {}
         self.results = {}
-
-
 
 class Player:
     def __init__(self, id, name):
         self.id = id
         self.name = name
+        self.points = 0
 
     def __hash__(self):
         return hash(self.id)
 
     def __eq__(self, other):
-        return self.id == other.id
-    
-    def get_id(self):
-        return self.id
+        return self.name == other.name
 
-    def get_name(self):
-        return self.name
+    def award_points(self, points):
+        self.points += points

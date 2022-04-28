@@ -78,12 +78,13 @@
     <!-- Game -->
     <div id="game_modal_background" style="display: none;">
         <div id="game_model">
+            <p id="current_player"></p>
             <p id="choosen_word"></p>
             <form id="word_options_form">
                 <div>
-                    <input id="Option1" class="btn btn-default" type="submit" value="" onclick="select_word(this)">
-                    <input id="Option2" class="btn btn-default" type="submit" value="" onclick="select_word(this)">
-                    <input id="Option3" class="btn btn-default" type="submit" value="" onclick="select_word(this)">
+                    <input id="Option1" class="btn btn-default" type="submit" value="" onclick="select_word('Option1'); return false">
+                    <input id="Option2" class="btn btn-default" type="submit" value="" onclick="select_word('Option2'); return false">
+                    <input id="Option3" class="btn btn-default" type="submit" value="" onclick="select_word('Option3'); return false">
                 </div>
             </form>
             <form id="end_round_form">
@@ -91,7 +92,18 @@
                     <input class="btn btn-default" type="submit" value="End Turn">
                 </div>
             </form>
-            <p id="lobby_error"></p>
+ 
+            <ul id="chatbox"></ul>
+
+            <form id="message_form">
+                <div>
+                    <input id="usermsg" type="text" placeholder="Answer here"
+                        name="usermsg">
+                    <input class="btn btn-default" type="submit" value="Send">
+                </div>
+            </form>
+
+            <p id="game_error"></p>
         </div>
     </div>
 

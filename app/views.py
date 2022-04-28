@@ -14,35 +14,33 @@ def render_game():
 
 @socketio.on('add_player')
 def add_player(player_name, room_code):
-    if(room_code == None):
+    if(room_code == None or room_code == ""):
         room_code = checkout_room_code()
         GameMap[room_code] = Game(room_code)
-    player_id = room_code + player_name
-    join_room(player_id)
-    GameMap[room_code].add_player(player_id, player_name)
+    join_room(room_code)
+    GameMap[room_code].add_player(request.sid, player_name)
     # TODO handle error if same name.
-    player_names = [player.get_name() for player in GameMap[room_code].players]
-    for player in GameMap[room_code].players:
-        print(player.get_id())
-        socketio.emit('add_player_to_list', {"player_name":player_names,
-                      "room_code":room_code}, room=player.get_id())
+    player_names = [player.name for player in GameMap[room_code].players]
+    socketio.emit('add_player_to_list', {"player_name":player_names, "room_code":room_code}, room=room_code)
 
 @socketio.on('start_game')
 def start_game(room_code):
     game = GameMap[room_code]
     game.load_word_set("movies")
-    current_player, choices = game.start_new_turn()
-    other_players = game.get_other_players(current_player)
-    for player_id in other_players:
-        print(current_player.get_name())
-        socketio.emit('start_round',
-                        {"current_player":current_player.get_name()},
-                        room=player_id)
-    print(current_player.get_id())    
-    socketio.emit('start_player_turn', {"current_player":current_player.get_name(), "choices":choices},
-                    room="ABCDjess")
+    choices = game.start_new_turn() 
+    socketio.emit('start_round',
+                    {"current_player":game.get_current_player_name(), "choices":choices},
+                    room=room_code)
 
+@socketio.on('choose_word')
+def choose_word(choosen_word, room_code):
+    game = GameMap[room_code]
+    game.choose_word(choosen_word)
+    socketio.emit('choosen_word', {"choosen_word": choosen_word, "current_player":game.get_current_player_name()},
+                  room = room_code)
 
-@socketio.on('choosen_word')
-def choosen_word(choosen_word, room_code):
-    GameMap[room_code].choose_word(choosen_word)
+@socketio.on('send_chat')
+def send_chat(msg, room_code, player_name):
+    game = GameMap[room_code]
+    socketio.emit('recieve_messages', {"msg": msg, "messenger_name":player_name, "points":game.answer(msg, player_name)},
+                  room = room_code)
