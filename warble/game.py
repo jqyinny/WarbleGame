@@ -15,9 +15,10 @@ class Game:
         """
         self.game_id = game_id
         self.players = []
-        self.turn_number = 0
+        self.turn_number = -1
         self.wordset = []
-        self.current_round = None
+        self.current_turn = Turn()
+        self.num_rounds = 0
 
     def add_player(self, player_id, player_name):
         self.players.append(Player(player_id, player_name))
@@ -33,46 +34,70 @@ class Game:
         return [player.get_id() for player in self.players if player != current_player]
 
     def start_new_turn(self):
-        self.current_round = Round(self.turn_number%len(self.players))
-        choices = self.get_word_choices()
         # Update turn number
         self.turn_number += 1
+        self.current_turn.reset(self.turn_number%len(self.players))
+        choices = self.get_word_choices()
         return choices
         
     # TODO add wordset options
-    def load_word_set(self, wordset):
-        with open("warble/words/"+wordset+".txt") as f:
-            self.wordset = f.readlines()
-            f.close()
+    def load_settings(self, wordset, num_rounds):
+        self.wordset = open("warble/words/"+wordset+".txt",'r').read().splitlines()
+        self.num_rounds = num_rounds
 
     def get_word_choices(self):
         return random.sample(self.wordset, 3)
 
     def choose_word(self, choosen_word):
-        self.current_round.word = choosen_word
+        self.current_turn.word = choosen_word
 
     def get_current_player_name(self):
-        return self.players[self.current_round.current_player_index].name
+        return self.players[self.current_turn.current_player_index].name
 
     def get_current_player_id(self):
-        return self.players[self.current_round.current_player_index].sid
+        return self.players[self.current_turn.current_player_index].sid
     
+    def already_answered(self, name):
+        return name in self.current_turn.answered
+
     def answer(self, answer, name):
-        word_picked = self.current_round.word != ""
-        correct = self.current_round.word == answer
-        not_answered = name in self.current_round.answered
-        if(word_picked and correct and not_answered):
+        word_picked = self.current_turn.word != ""
+        correct = self.current_turn.word == answer
+        if(word_picked and correct):
             points = 100
             next(player for player in self.players if player.name == name).award_points(points)
+            self.players[self.current_turn.current_player_index].award_points(50)
+            self.current_turn.answered.append(name)
             return points
         return 0
 
-class Round:
-    def __init__(self, index):
-        self.current_player_index = index
+    def all_players_answered(self):
+        return len(self.current_turn.answered) == (len(self.players) - 1)
+
+    def game_over(self):
+        return self.get_round_num() == self.num_rounds
+
+    def reset(self):
+        self.turn_number = -1
+        for player in self.players:
+            player.points = 0
+    
+    def get_round_num(self):
+        return self.turn_number/len(self.players)
+    
+    def get_winner(self):
+        return max(self.players).name
+
+class Turn:
+    def __init__(self):
+        self.current_player_index = 0
         self.word = ""
-        self.answered = {}
-        self.results = {}
+        self.answered = []
+
+    def reset(self, index):
+        self.word = ""
+        self.answered = []
+        self.current_player_index = index
 
 class Player:
     def __init__(self, id, name):
@@ -85,6 +110,9 @@ class Player:
 
     def __eq__(self, other):
         return self.name == other.name
+
+    def __gt__(self, other):
+        return self.points > other.points
 
     def award_points(self, points):
         self.points += points

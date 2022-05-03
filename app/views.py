@@ -1,8 +1,9 @@
 from flask import render_template, request, redirect
 from flask_socketio import join_room
-from app import app, socketio
+from app import app, socketio, scheduler
 from .dal import checkout_room_code
 from warble.game import Game
+import time
 
 # TODO add read/write mutex
 # Roomcode to Game
@@ -12,6 +13,7 @@ GameMap = {}
 def render_game():
     return render_template('game.html')
 
+# TODO how to add players when game already starts
 @socketio.on('add_player')
 def add_player(player_name, room_code):
     if(room_code == None or room_code == ""):
@@ -23,13 +25,15 @@ def add_player(player_name, room_code):
     player_names = [player.name for player in GameMap[room_code].players]
     socketio.emit('add_player_to_list', {"player_name":player_names, "room_code":room_code}, room=room_code)
 
+# TODO must have 2 or more players
 @socketio.on('start_game')
 def start_game(room_code):
     game = GameMap[room_code]
-    game.load_word_set("movies")
+    game.load_settings("movies", 3)
+    game.reset()
     choices = game.start_new_turn() 
-    socketio.emit('start_round',
-                    {"current_player":game.get_current_player_name(), "choices":choices},
+    socketio.emit('start_turn',
+                    {"current_player":game.get_current_player_name(), "choices":choices, "round_num":game.get_round_num(), "total_num_rounds":game.num_rounds},
                     room=room_code)
 
 @socketio.on('choose_word')
@@ -42,5 +46,28 @@ def choose_word(choosen_word, room_code):
 @socketio.on('send_chat')
 def send_chat(msg, room_code, player_name):
     game = GameMap[room_code]
-    socketio.emit('recieve_messages', {"msg": msg, "messenger_name":player_name, "points":game.answer(msg, player_name)},
+    # Players who answered correctly are not allowed to chat
+    if(game.already_answered(player_name) or game.get_current_player_name() == player_name):
+        return
+    points = game.answer(msg, player_name)
+    socketio.emit('recieve_messages', {"msg": msg, "messenger_name":player_name, "points":points},
                   room = room_code)
+    # End turn
+    if(game.all_players_answered()):
+        player_names = [player.name for player in GameMap[room_code].players]
+        scores = [player.points for player in GameMap[room_code].players]
+        socketio.emit('turn_over', {"player_names":player_names, "scores":scores}, room = room_code)
+
+@socketio.on('next_turn')
+def next_turn(room_code):
+    game = GameMap[room_code]
+    if(game.game_over()):
+            game.players.sort()
+            player_names = [player.name for player in GameMap[room_code].players]
+            scores = [player.points for player in GameMap[room_code].players]
+            socketio.emit('game_over', {"player_names":player_names, "scores":scores, "winner":game.get_winner()}, room = room_code)
+    else:
+        choices = game.start_new_turn() 
+        socketio.emit('start_turn',
+                        {"current_player":game.get_current_player_name(), "choices":choices, "round_num":game.get_round_num(), "total_num_rounds":game.num_rounds},
+                        room=room_code)
