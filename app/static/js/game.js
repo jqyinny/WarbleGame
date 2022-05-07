@@ -3,6 +3,7 @@ var player_name;
 var socket = io.connect('//' + document.domain + ':' + location.port);
 var room_code;
 
+/*--------------------------------------------------------HTML Calls-----------------------------------------------------------*/
 $(document).ready(function () {
     // populate submit events
     $("#next_turn_form").submit(function (event) {
@@ -46,14 +47,19 @@ $(document).ready(function () {
     // Start game.
     $("#lobby_form").submit(function (event) {
         event.preventDefault();
-        socket.emit('start_game', room_code);
+        var dropdown = document.getElementById("wordset_dropdown");
+        var selected = dropdown.options[dropdown.selectedIndex].text;
+        if($("#player_list").children().length < 2){
+            $("#lobby_error").text('You must have at least 2 players to play.');
+        }else{
+            socket.emit('start_game', room_code, selected);
+        }
     });
 
     $("#message_form").submit(function(event) {
         event.preventDefault();
         msg = $('#usermsg').val();
         if(msg != "" ){
-            console.log("sending msg");
             socket.emit("send_chat", msg, room_code, player_name);
         }
         $('#usermsg').val("");
@@ -66,18 +72,41 @@ $(document).ready(function () {
 
     // TODO add cookie when already logged in
     $('#prelobby_modal_background').show();
-
 });
 
 
+/*----------------------------------------------Helper Functions----------------------------------------------------*/
 function lobby() {
     $('#end_modal_background').hide();
     $('#lobby_modal_background').show();
+
+    socket.emit("get_wordset_set");
+    socket.once("populate_wordset_options", populate_wordset_options);
     
     socket.once('start_turn', start_turn);
     socket.once("game_over", game_over);
 }
 
+function populate_wordset_options(data) {
+    const wordset_json = data["wordset_set"];
+    let wordset_options = document.getElementById('wordset_dropdown');
+    console.log(wordset_json);
+    for (let i = 0; i < wordset_json.length; ++i) {
+        let wordset_option=document.createElement('option');
+        wordset_option.value = wordset_json[i];
+        wordset_option.innerHTML = wordset_json[i];   // Use innerHTML to set the text
+        wordset_options.appendChild(wordset_option);                                 
+    }
+}
+
+/*----------------------------------------------Onclick Calls----------------------------------------------------*/
+// Onclick from html word options
+function select_word(option){
+    let word = document.getElementById(option).value;
+    socket.emit("choose_word", word, room_code);
+}
+
+/*----------------------------------------------Server Calls----------------------------------------------------*/
 // Called by server after turn starts.
 function start_turn(data) {
     $('#lobby_modal_background').hide();
@@ -107,12 +136,6 @@ function start_turn(data) {
     socket.once("choosen_word", choosen_word);
     socket.on("recieve_messages", recieve_messages);
     
-}
-
-// Onclick from html word options
-function select_word(option){
-    let word = document.getElementById(option).value;
-    socket.emit("choose_word", word, room_code);
 }
 
 function recieve_messages(data){

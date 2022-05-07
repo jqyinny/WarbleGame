@@ -1,0 +1,17 @@
+{
+    "movies": ["Shrek", "Juno", "Black Panther", "Twilight", "8 Mile", "A Star is Born",
+        "Pulp Fiction", "Lord of the Rings", "Harry Potter", "StarWars", "Mulan", "Enchanted",
+        "Toy Story", "Spider Man", "Tron", "2001: A Space Odyssey", "The Pink Panther",
+        "Superman", "Back to the Future", "Jaws", "Rocky"],
+    "video games": ["Uncharted", "Wii Sports", "BioShock", "Crash Bandicoot", "the binding of isaac",
+        "Metal Gear Solid", "Super Mario Bros","Tetris","The Legend of Zelda","Final Fantasy",
+        "Kingdom Hearts","Metroid", "Portal", "Earthbound", "Resident Evil", "Donkey Kong Country",
+        "Sonic the Hedgehog", "Pokemon", "Kirby", "Smash", "Star Fox"],
+    "anime": [],
+    "Broadway Musicals": ["The Music Man", "The Lion King", "Wicked",
+        "Moulin Rouge! The Musical", "The Phantom of the Opera",
+        "Aladdin", "The Book of Mormon", "MJ The Musical", "Chicago",
+        "Hadestown", "Beetlejuice", "Funny Girl", "Tina: The Tina Turner Musical",
+        "Dear Evan Hansen", "Beetlejuice", "Mr. Saturday Night", "Mrs. Doubtfire", "Hamilton"],
+    "shows": ["Game of Thrones"]
+}

@@ -18,6 +18,8 @@ body {
     height: 100%;
     padding: 50px;
     background-color: #F8F3D4;
+    color: #000000;
+    justify-content: center;
 }
 
 #prelobby_modal_background{
@@ -52,3 +54,16 @@ body {
 .split-items{
     border: none;
 }
+
+#word_options_form{
+    display: flex;
+    justify-content: center;
+}
+
+
+.sprite {display:inline-block; overflow:hidden; background-repeat: no-repeat;background-image:url(assets/sprites.png);}
+
+.four {width:96px; height:85px; background-position: -0px -0px}
+.one {width:96px; height:85px; background-position: -96px -0px}
+.three {width:96px; height:85px; background-position: -192px -0px}
+.two {width:96px; height:85px; background-position: -288px -0px}

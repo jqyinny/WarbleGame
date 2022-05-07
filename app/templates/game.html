@@ -58,10 +58,13 @@
 
     <!-- Lobby modal -->
     <div id="lobby_modal_background" class="content">
-        <div id="lobby_model" class="split">
+        <div id="lobby_model">
             <p id="room_code"></p>
             <ul id="player_list"></ul>
             <form id="lobby_form">
+                <label for="wordset">Choose a word set:</label>
+                <select name="wordset" id="wordset_dropdown">
+                </select>
                 <div>
                     <input class="btn btn-default" type="submit" value="Start Game">
                 </div>
@@ -77,7 +80,7 @@
             <div id="game_meta_info">
                 <p id="round_num"></p>
                 <p id="current_player"></p>
-                <p id="choosen_word"></p>
+                <p id="choosen_word"></p> 
             </div>
             <form id="word_options_form">
                 <div>

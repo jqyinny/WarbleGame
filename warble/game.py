@@ -40,9 +40,8 @@ class Game:
         choices = self.get_word_choices()
         return choices
         
-    # TODO add wordset options
     def load_settings(self, wordset, num_rounds):
-        self.wordset = open("warble/words/"+wordset+".txt",'r').read().splitlines()
+        self.wordset = wordset
         self.num_rounds = num_rounds
 
     def get_word_choices(self):

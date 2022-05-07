@@ -3,17 +3,18 @@ from flask_socketio import join_room
 from app import app, socketio, scheduler
 from .dal import checkout_room_code
 from warble.game import Game
-import time
+import json
 
 # TODO add read/write mutex
 # Roomcode to Game
 GameMap = {}
+wordset = json.load(open('app/wordsets.json'))
 
 @app.route('/', methods = ['GET', 'POST'])
 def render_game():
     return render_template('game.html')
 
-# TODO how to add players when game already starts
+# TODO handle how to add players when game already starts
 @socketio.on('add_player')
 def add_player(player_name, room_code):
     if(room_code == None or room_code == ""):
@@ -25,11 +26,10 @@ def add_player(player_name, room_code):
     player_names = [player.name for player in GameMap[room_code].players]
     socketio.emit('add_player_to_list', {"player_name":player_names, "room_code":room_code}, room=room_code)
 
-# TODO must have 2 or more players
 @socketio.on('start_game')
-def start_game(room_code):
+def start_game(room_code, wordset_choice):
     game = GameMap[room_code]
-    game.load_settings("movies", 3)
+    game.load_settings(wordset[wordset_choice], 3)
     game.reset()
     choices = game.start_new_turn() 
     socketio.emit('start_turn',
@@ -71,3 +71,7 @@ def next_turn(room_code):
         socketio.emit('start_turn',
                         {"current_player":game.get_current_player_name(), "choices":choices, "round_num":game.get_round_num(), "total_num_rounds":game.num_rounds},
                         room=room_code)
+
+@socketio.on('get_wordset_set')
+def get_wordset_set():
+    socketio.emit("populate_wordset_options", {"wordset_set": list(wordset.keys())})

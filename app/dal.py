@@ -1,4 +1,5 @@
+roomlist = ["A", "B", "C", "D"]
 
 def checkout_room_code():
-    # TODO implement code system
-    return "ABCD"
+    # TODO lock roomlist. Add logic to remove empty and finished games
+    return roomlist.pop()
