@@ -1,6 +1,6 @@
 from flask import render_template, request, redirect
 from flask_socketio import join_room
-from app import app, socketio, scheduler
+from app import app, socketio
 from .dal import checkout_room_code
 from warble.game import Game
 import json
