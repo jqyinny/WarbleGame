@@ -13,5 +13,6 @@
         "Aladdin", "The Book of Mormon", "MJ The Musical", "Chicago",
         "Hadestown", "Beetlejuice", "Funny Girl", "Tina: The Tina Turner Musical",
         "Dear Evan Hansen", "Beetlejuice", "Mr. Saturday Night", "Mrs. Doubtfire", "Hamilton"],
-    "shows": ["Game of Thrones"]
+    "shows": ["Game of Thrones", "Spongebob"],
+    "animal sounds": ["bird", "cat", "whale", "dolphin", "monkey", "lion", "dog"]
 }
