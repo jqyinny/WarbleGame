@@ -5,6 +5,6 @@ setup(
     packages=['warble'],
     include_package_data=True,
     install_requires=[
-        'flask','flask_socketio', 'json', 'random'
+        'flask','flask_socketio'
     ],
 )
