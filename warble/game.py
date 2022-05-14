@@ -43,6 +43,7 @@ class Game:
     def load_settings(self, wordset, num_rounds, round_duration):
         self.wordset = wordset
         self.num_rounds = num_rounds
+        self.duration = round_duration
 
     def get_word_choices(self):
         return random.sample(self.wordset, 3)
@@ -61,7 +62,7 @@ class Game:
 
     def answer(self, answer, name):
         word_picked = self.current_turn.word != ""
-        correct = self.current_turn.word == answer
+        correct = self.current_turn.word.lower() == answer.lower()
         if(word_picked and correct):
             points = 100
             next(player for player in self.players if player.name == name).award_points(points)

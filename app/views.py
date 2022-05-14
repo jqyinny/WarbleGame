@@ -31,7 +31,7 @@ def start_game(room_code, wordset_choice):
     game.reset()
     choices = game.start_new_turn() 
     socketio.emit('start_turn',
-                    {"current_player":game.get_current_player_name(), "choices":choices, "round_num":game.get_round_num(), "total_num_rounds":game.num_rounds},
+                    {"current_player":game.get_current_player_name(), "choices":choices, "round_num":game.get_round_num(), "total_num_rounds":game.num_rounds, "duration":game.duration},
                     room=room_code)
 
 @socketio.on('choose_word')
@@ -40,7 +40,7 @@ def choose_word(choosen_word, room_code):
     game.choose_word(choosen_word)
     socketio.emit('choosen_word', {"choosen_word": choosen_word, "current_player":game.get_current_player_name()},
                   room = room_code)
-    socketio.sleep(10)
+    socketio.sleep(game.duration)
     player_names = [player.name for player in game.players]
     scores = [player.points for player in game.players]
     socketio.emit('turn_over', {"player_names":player_names, "scores":scores}, room = room_code)
@@ -71,7 +71,7 @@ def next_turn(room_code):
     else:
         choices = game.start_new_turn() 
         socketio.emit('start_turn',
-                        {"current_player":game.get_current_player_name(), "choices":choices, "round_num":game.get_round_num(), "total_num_rounds":game.num_rounds},
+                        {"current_player":game.get_current_player_name(), "choices":choices, "round_num":game.get_round_num(), "total_num_rounds":game.num_rounds, "duration":game.duration},
                         room=room_code)
 
 @socketio.on('get_wordset_set')

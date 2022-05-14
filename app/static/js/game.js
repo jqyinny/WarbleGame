@@ -159,8 +159,8 @@ function choosen_word(data){
     }else{
         $("#choosen_word").text( "Guess the word!");
     }
-    var seconds_left = 10;
-    
+    var seconds_left = data["duration"];
+
     // Update the count down every 1 second
     var x = setInterval(function() {
         seconds_left-=1;
