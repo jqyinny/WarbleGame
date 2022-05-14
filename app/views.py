@@ -1,13 +1,10 @@
-from flask import render_template, request, redirect
+from flask import render_template, request
 from flask_socketio import join_room
 from app import app, socketio
-from .dal import checkout_room_code
+from .dal import checkout_room_code, GameMap
 from warble.game import Game
 import json
 
-# TODO add read/write mutex
-# Roomcode to Game
-GameMap = {}
 wordset = json.load(open('app/wordsets.json'))
 
 @app.route('/', methods = ['GET', 'POST'])
@@ -29,7 +26,8 @@ def add_player(player_name, room_code):
 @socketio.on('start_game')
 def start_game(room_code, wordset_choice):
     game = GameMap[room_code]
-    game.load_settings(wordset[wordset_choice], 3)
+    # TODO give options to players
+    game.load_settings(wordset[wordset_choice], num_rounds=3, round_duration=30)
     game.reset()
     choices = game.start_new_turn() 
     socketio.emit('start_turn',
@@ -42,6 +40,10 @@ def choose_word(choosen_word, room_code):
     game.choose_word(choosen_word)
     socketio.emit('choosen_word', {"choosen_word": choosen_word, "current_player":game.get_current_player_name()},
                   room = room_code)
+    socketio.sleep(10)
+    player_names = [player.name for player in game.players]
+    scores = [player.points for player in game.players]
+    socketio.emit('turn_over', {"player_names":player_names, "scores":scores}, room = room_code)
 
 @socketio.on('send_chat')
 def send_chat(msg, room_code, player_name):

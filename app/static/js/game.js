@@ -113,7 +113,7 @@ function start_turn(data) {
     $('#score_modal_background').hide();
     $('#game_modal_background').show();
     
-    // reset turn
+    // reset turn metadata
     $('#word_options_form').show();
     $("#choosen_word").text( "");
     let list = document.getElementById("chatbox");
@@ -159,6 +159,18 @@ function choosen_word(data){
     }else{
         $("#choosen_word").text( "Guess the word!");
     }
+    var seconds_left = 10;
+    
+    // Update the count down every 1 second
+    var x = setInterval(function() {
+        seconds_left-=1;
+        document.getElementById("timer").innerHTML = seconds_left;
+        if (seconds_left < 0) {
+        clearInterval(x);
+        document.getElementById("timer").innerHTML = "Time's Up!";
+        }
+    }, 1000);
+
     socket.once("turn_over", turn_over);
 }
 

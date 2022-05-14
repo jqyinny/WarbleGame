@@ -40,7 +40,7 @@ class Game:
         choices = self.get_word_choices()
         return choices
         
-    def load_settings(self, wordset, num_rounds):
+    def load_settings(self, wordset, num_rounds, round_duration):
         self.wordset = wordset
         self.num_rounds = num_rounds
 
