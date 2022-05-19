@@ -3,6 +3,8 @@ var player_name;
 var socket = io.connect('//' + document.domain + ':' + location.port);
 var room_code;
 
+var spriteSheetURL = 'static/assets/characters.png';
+
 /*--------------------------------------------------------HTML Calls-----------------------------------------------------------*/
 $(document).ready(function () {
     // populate submit events
@@ -99,6 +101,28 @@ function populate_wordset_options(data) {
     }
 }
 
+function GetSpritePosition(index) {
+    return {
+        x: (
+            index * (250)
+        ),
+        y: (
+            0
+        )
+    }
+}
+
+function GetPlayerOffset(index) {
+    return {
+        x: (
+            index * (100 + 15)
+        ),
+        y: (
+            (index%2) * 25
+        )
+    }
+}
+
 /*----------------------------------------------Onclick Calls----------------------------------------------------*/
 // Onclick from html word options
 function select_word(option){
@@ -164,7 +188,7 @@ function choosen_word(data){
     // Update the count down every 1 second
     var x = setInterval(function() {
         seconds_left-=1;
-        document.getElementById("timer").innerHTML = seconds_left;
+        document.getElementById("timer").innerHTML = "Time left: " + seconds_left;
         if (seconds_left < 0) {
         clearInterval(x);
         document.getElementById("timer").innerHTML = "Time's Up!";
@@ -177,14 +201,50 @@ function choosen_word(data){
 // Called by server after successful player name added.
 function add_player_to_list(data){
     room_code = data["room_code"];
+    player_names = data["player_name"];
     $("#room_code").text("Room Code: "+ room_code);
     let list = document.getElementById("player_list");
     list.innerHTML="";
-    for (const other_player_name in data["player_name"]) {
+
+    
+    let canvas = document
+    .getElementById('myCanvas');
+    let context = canvas
+    .getContext('2d');
+
+    for (let i = 0; i < player_names.length; i++) {
         let li = document.createElement("li");
-        li.innerText = data["player_name"][other_player_name];
+        let player_name = player_names[i];
+        li.innerText = player_name;
         list.appendChild(li);
+
+        // update canvas
+        var image = new Image();
+        image.src = spriteSheetURL;
+        image.crossOrigin = true;
+        
+        let position = GetSpritePosition(i);
+        let canvas_position = GetPlayerOffset(i);
+        
+        image.onload = function() {
+            context.drawImage(
+                image,
+                // source offsets
+                position.x, position.y,
+                // source width and height
+                249, 249,
+                // destination offsets
+                canvas_position.x, canvas_position.y,
+                // destination width and height
+                100, 100
+            );
+        };
+
+        context.font = "30px Arial";
+        context.fillText(player_name, canvas_position.x, canvas_position.y + 20);
     }
+
+
 }
 
 // Called by server after turn end conditions.
